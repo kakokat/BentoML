@@ -1,16 +1,14 @@
 .. _building-bentos-page:
 
-Building Bentos
-===============
+Bento Format
+============
 
-Bento is a standardized file archive format in BentoML that describes
-how to load and run a ``bentoml.Service`` defined by the user. It
-includes code that instantiates the ``bentoml.Service`` instance, as
-well as related configurations, data/model files, and dependencies.
+BentoML is a standard file format that describes how to load and run
+a ``bentoml.Service`` defined by the user. It includes code that
+instantiates the ``bentoml.Service`` instance, as well as related
+configurations, data/model files, and dependencies. 
 
-A Bento can be built with the ``bentoml build`` command with the
-``bentofile.yaml`` configuration file. Here's an example of that
-process from the `quickstart guide (https://github.com/bentoml/gallery/tree/main/quickstart#build-bento-for-deployment)_`.
+Here's an example of a ``bentofile.yaml`` configuration file:
 
 .. code:: yaml
 
@@ -26,10 +24,41 @@ process from the `quickstart guide (https://github.com/bentoml/gallery/tree/main
          - scikit-learn
          - pandas
 
-The service field is the python module that holds the bentoml.Service
-instance.
+Service
+-------
+The `service` parameter is a required field which uses the specified Python module and variable name to locate the 
+``bentoml.Service`` instance. It's format is as follows:
 
-Built bentos are added the local bento store and can be managed with both Python APIs and CLI.
+`service: <your service .py filename>:<variable name of service in .py file>`
+
+If either parameter is incorrect, the Bento will not be built properly. BentoML uses this convention to find the service, 
+inspect it and then determine which models should be packed into the bento.
+
+Description
+-----------
+
+The `description` argument's contents will be used to create the `README.md` file in the Bento archive. If not explicitly specified, 
+the build will search for the presence of a `README.md` file in the current working directory and set its contents as the
+description.
+
+Labels
+------
+The `labels` argument creates a key value map which sets labels on the bento so that you can add your own custom descriptors to the Bento.
+
+Additional Models
+-----------------
+
+The build automatically identifies the models and their versions based on the
+:ref:`service definition <service-definition-page>`. When the service definition loads runners through
+the framework specific `load_runner()` function, the build will identify the model through the tag
+provided in the arguments. Use the `additional_models`` keyword argument to include models tags that
+are used in customer `runners`.
+
+Building Bentos
+===============
+
+A Bento can be built with the ``bentoml build`` command and the ``bentofile.yaml`` configuration file. 
+Once built, they are added to the local Bento store and can be managed with both Python APIs and the CLI.
 
 .. code-block:: bash
 
@@ -38,13 +67,13 @@ Built bentos are added the local bento store and can be managed with both Python
 
 The build options by default work for the most common cases but can be further customized by calling
 the `set_build_options()` function on the service. Let's explore the available options. See documentation
-for in-depth details of build options.
+for in-depth details on build options.
 
 
 Configuring files to include
 ----------------------------
 
-In the example above, the ``*.py`` is including every Python file in
+In the sample configuration file above, the ``*.py`` is including every Python file in
 the working directory.
 
 You can also include other wildcard and directory matching.
@@ -61,14 +90,14 @@ You can also include other wildcard and directory matching.
 If the include field is not specified, BentoML, by default, will include
 every file in the working directory. Try to limit the amount of files that
 are included in your bento. For example, if unspecified, or if * is
-specified, all git versioning in the directory could be included in the
-bento by accident.
+specified, all Git versioning in the directory could be included in the
+Bento by accident.
 
 Configuring files to exclude
 ----------------------------
 
 If the user needs to include a lot of files, another approach is to
-only specify which files to be ignored.
+only specify which files should be ignored.
 
 The `exclude` keyword argument specifies the pathspecs (similar to the
 .gitignore files) of the Python modules or data files to be excluded in the
@@ -78,7 +107,7 @@ is run to achieve the same file exclusion during build. If not explicitly
 specified, nothing is excluded from the build. Exclude is applied after
 include.
 
-This is what a ``.bentoignore`` file would look like.
+This is what a ``.bentoignore`` file would look like:
 
 .. code:: bash
 
@@ -98,72 +127,17 @@ directory that contains your ``bentofile.yaml``:
 
    bentoml build
 
-By default, ``build`` will include all files in current working
-directory, besides the files specified in the ``.bentoignore`` file in
+By default, ``build`` will include all files in the current working
+directory, while excluding the files specified in the ``.bentoignore`` file of
 the same directory. It will also automatically infer all PyPI packages
 that are required by the service code, and pin down the version used
-in current environment.
+in the current environment.
 
-The version of the bento to be built can be specified by the ``--version`` keyword argument. If not explicitly
+The ``--version`` keyword argument is used to specify the version of the Bento being built. If not explicitly
 specified, the version is automatically generated based on the timestamp of the build combined with random bytes.
 
-By default the ``bentofile.yaml`` is used as the build configuration, but you may also specify a custom bentofile
+Although the ``bentofile.yaml`` is used for the build configuration by default, you may also specify a custom bentofile
 using the ``--bentofile`` parameter.
-
-
-Bento Format
-============
-
-BentoML is a standard file format that describes how to load and run
-a ``bentoml.Service`` defined by the user. It includes code that
-instantiates the ``bentoml.Service`` instance, as well as related
-configurations, data/model files, and dependencies.
-
-.. code:: yaml
-
-   service: "service:svc"
-   description: "file: ./README.md"
-   labels:
-      owner: bentoml-team
-      stage: demo
-   include:
-      - "*.py"
-   python:
-      packages:
-         - scikit-learn
-         - pandas
-
-Service
--------
-
-The `service` parameter is a required field which must specify where the service code is located and under what variable
-name the service is instantiated in the code itself, separated by a colon. If either parameters is incorrect, the bento will
-not be built properly. BentoML uses this convention to find the service, inspect it and then determine which models should be
-packed into the bento.
-
-`<Your Service .py file>:<Variable Name of Service in .py file>`
-
-Description
------------
-
-The keyword argument sets the `description` of the Bento service. The contents will be used to create the
-`README.md` file in the bento archive. If not explicitly specified, the build to first look for the
-presence of a `README.md` in the current working directory and set the contents of the file as the
-description.
-
-Labels
-------
-The `labels` argument is a key value mapping which sets labels on the bento so that you can add your own custom descriptors to the bento
-
-Additional Models
------------------
-
-The build automatically identifies the models and their versions to be built into the bento based on the
-:ref:`service definition <service-definition-page>`. The service definition loads runners through
-the framework specific `load_runner()` function, the build will identify the model through the tag
-provided in the arguments. Use the `additional_models`` keyword argument to include models tags that
-are used in customer `runners`.
-
 
 Python Packages
 ===============
@@ -185,7 +159,7 @@ pip will just use the latest release.
         - numpy
         - "matplotlib==3.5.1"
 
-The user needs to put all required python packages for the Bento Service in a
+The user needs to put all required Python packages for the Bento service in a
 ``requirements.txt``. For a project, you can run ``pip freeze > requirements.txt``
 to generate a requirements file to load with BentoML.
 
@@ -217,7 +191,7 @@ Additionally, there are more fields that can help manage larger projects.
 +===================+====================================================================================+
 | requirements_txt  | The path to a custom requirements.txt file                                         |
 +-------------------+------------------------------------------------------------------------------------+
-| packages          | Packages to include in this bento                                                  |
+| packages          | Packages to include in this Bento                                                  |
 +-------------------+------------------------------------------------------------------------------------+
 | lock_packages     | Whether to lock the packages or not                                                |
 +-------------------+------------------------------------------------------------------------------------+
@@ -244,7 +218,7 @@ By default, when the BentoML service generates package requirements
 from the Bentofile, the package versions will be locked for easier
 reproducibility. BentoML uses pip-tools to lock the packages.
 
-If the ``requirements.txt`` includes locked packages, or a configuration
+If the ``requirements.txt`` includes locked packages or a configuration
 you need, set the ``lock_packages`` field to False.
 
 Pip Wheels
@@ -272,7 +246,7 @@ Similarly to PyPi, you can use Conda to handle dependencies.
         - "conda-forge"
 
 Here, we need the conda-forge repository to install numpy with conda.
-The ``channels`` field let's us specify that to the BentoML service.
+The ``channels`` field lets us specify that to the BentoML service.
 
 In a preexisting environment, running ``conda export`` will generate
 an ``environment.yml`` file to be included in the ``environment_yml``
@@ -288,7 +262,7 @@ Conda Fields
 +------------------+----------------------------------------------------------------------------------------------------------------------------------+
 | Field            | Description                                                                                                                      |
 +==================+==================================================================================================================================+
-| environment_yml  | Path to a conda environment file to copy into the bento. If specified, this file will overwrite any additional option specified  |
+| environment_yml  | Path to a conda environment file to copy into the Bento. If specified, this file will overwrite any additional option specified  |
 +------------------+----------------------------------------------------------------------------------------------------------------------------------+
 | channels         | Custom conda channels to use. If not specified will use "defaults"                                                               |
 +------------------+----------------------------------------------------------------------------------------------------------------------------------+
@@ -314,18 +288,18 @@ Here's a basic Docker options configuration.
      python_version: "3.8.9"
      setup_script: "setup.sh"
 
-For the ``distro`` options, you can choose from 5.
+For the ``distro`` options, you can choose from 5:
 
-- debian
-- amazonlinux2
-- alpine
-- ubi8
-- ubi7
+* debian
+* amazonlinux2
+* alpine
+* ubi8
+* ubi7
 
 This config can be explored from `BentoML's Docker page <https://hub.docker.com/r/bentoml/bento-server>`_.
 
 The `gpu` field instructs BentoML to select a Docker base
-image that contains NVIDIA drivers and cuDNN library.
+image that contains NVIDIA drivers and the cuDNN library.
 
 For further Docker development, you can also use a ``setup_script``
 for the container. This script will run during the ``docker build``
@@ -342,17 +316,17 @@ Docker Fields
 +-----------------+--------------------------------------------------------------------------------------------------------------------+
 | Field           | Description                                                                                                        |
 +=================+====================================================================================================================+
-| distro          | Configure the particular os distribution on the Docker image ["debian", "amazonlinux2", "alpine", "ubi8", "ubi7"]  |
+| distro          | Configure the particular OS distribution on the Docker image ["debian", "amazonlinux2", "alpine", "ubi8", "ubi7"]  |
 +-----------------+--------------------------------------------------------------------------------------------------------------------+
-| python_version  | Specify which python to include on the Docker image ["3.7", "3.8", "3.9"]                                          |
+| python_version  | Specify which Python to include on the Docker image ["3.7", "3.8", "3.9"]                                          |
 +-----------------+--------------------------------------------------------------------------------------------------------------------+
-| gpu             | Determine if your container will have a gpu. This is not compatible with certain distros                           |
+| gpu             | Determine if your container will have a GPU. This is not compatible with certain distros                           |
 +-----------------+--------------------------------------------------------------------------------------------------------------------+
-| devel           | If you want to use the latest main branch from the BentoML repo in your bento                                      |
+| devel           | If you want to use the latest main branch from the BentoML repo in your Bento                                      |
 +-----------------+--------------------------------------------------------------------------------------------------------------------+
-| setup_script    | Is a python or shell script that executes during docker build time                                                 |
+| setup_script    | Is a Python or shell script that executes during docker build time                                                 |
 +-----------------+--------------------------------------------------------------------------------------------------------------------+
-| base_image      | Is a user-provided custom docker base image. This will override all other custom attributes of the image           |
+| base_image      | Is a user-provided custom Docker base image. This will override all other custom attributes of the image           |
 +-----------------+--------------------------------------------------------------------------------------------------------------------+
 
 
@@ -361,5 +335,5 @@ Conclusion
 
 The ``bentofile.yaml`` is essential when generating a Bento,
 and can be as simple or in-depth as you need. All configuration
-can be included in the single file, or split with other smaller
+can be included in the single file, or split into other smaller
 requirements files.

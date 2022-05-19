@@ -3,26 +3,25 @@
 Configuration
 =============
 
-BentoML starts with an out-of-the-box configuration that works for common use cases. For advanced users, many
-features can be customized through configuration. Both BentoML CLI and Python APIs can be customized 
-by the configuration. Configuration is best used for scenarios where the customizations can be specified once 
-and applied to the entire team.
+BentoML starts with an out-of-the-box configuration that works for common use cases. Advanced users can use the 
+configuration to customize a variety of features, including the BentoML CLI and Python APIs. Configuration is 
+best used for scenarios where the customizations can be specified once and applied to the entire project.
 
 .. note::
-    BentoML configuration underwent a major redesign in release 0.13.0. Previous configuration set through the 
+    BentoML's configuration underwent a major redesign in release 0.13.0. The previous configuration set through the 
     `bentoml config` CLI command is no longer compatible with the configuration releases in 0.13.0 and above. 
-    Please see legacy configuration property mapping table below to upgrade configuration to the new format.
+    Please see the legacy configuration property mapping table below to upgrade your configuration to the new format.
 
-BentoML configuration is defined by a YAML file placed in a directory specified by the `BENTOML_CONFIG` 
-environment variable. The example below starts the bento server with configuration defined in `~/bentoml_configuration.yaml`
+The BentoML configuration is defined by a YAML file placed in a directory specified by the `BENTOML_CONFIG` 
+environment variable. The example below starts the Bento server with the configuration defined in `~/bentoml_configuration.yaml`.
 
 .. code-block:: shell
 
     $ BENTOML_CONFIG=~/bentoml_configuration.yml bentoml serve IrisClassifier:latest
 
-Users only need to specify a partial configuration with only the properties they wish to customize instead 
-of a full configuration schema. In the example below, the microbatching workers count is overridden to 4. 
-Remaining properties will take their defaults values.
+Rather than creating a full configuration schema, users only need to specify the properties they wish to customize in a 
+partial configuration. In the example below, the microbatching workers count is overridden to 4. Remaining properties will 
+take their defaults values.
 
 .. code-block:: yaml
     :caption: BentoML Configuration
@@ -40,7 +39,7 @@ the BentoML configuration template defined in
 Docker Deployment
 -----------------
 
-Configuration file can be mounted to the Docker container using the `-v` option and specified to the BentoML 
+The configuration file can be mounted to the Docker container using the `-v` option and specified to the BentoML 
 runtime using the `-e` environment variable option.
 
 .. code-block:: shell
